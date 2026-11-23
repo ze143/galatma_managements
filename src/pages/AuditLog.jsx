@@ -33,7 +33,6 @@ export default function AuditLog() {
             <thead className="bg-slate-50 border-b">
               <tr>
                 <th className="p-3 text-right font-bold text-slate-600">الشهر</th>
-                <th className="p-3 text-right font-bold text-slate-600">التوقيت</th>
                 <th className="p-3 text-right font-bold text-slate-600">المستخدم</th>
                 <th className="p-3 text-right font-bold text-slate-600">العملية</th>
                 <th className="p-3 text-right font-bold text-slate-600">الجدول</th>
@@ -47,7 +46,6 @@ export default function AuditLog() {
                 return (
                   <tr key={l.id} className="border-b border-slate-50">
                     <td className="p-3 font-semibold">{(l.created_at || '').slice(0, 7)}</td>
-                    <td className="p-3 text-xs">{new Date(l.created_at).toLocaleString('ar-EG')}</td>
                     <td className="p-3">{l.user_email || '-'}</td>
                     <td className="p-3"><span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-bold ${a.color}`}><Icon size={12} /> {a.label}</span></td>
                     <td className="p-3">{tableMap[l.table_name] || l.table_name}</td>
@@ -55,7 +53,7 @@ export default function AuditLog() {
                   </tr>
                 );
               })}
-              {filteredLogs.length === 0 && <tr><td colSpan={6} className="p-8 text-center text-slate-400">لا توجد سجلات بعد</td></tr>}
+              {filteredLogs.length === 0 && <tr><td colSpan={5} className="p-8 text-center text-slate-400">لا توجد سجلات بعد</td></tr>}
             </tbody>
           </table>
         </div>

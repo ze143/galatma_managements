@@ -7,10 +7,12 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 
+const currentMonth = new Date().toISOString().slice(0, 7);
+
 const empty = {
   name: '',
   category: '',
-  activity_date: new Date().toISOString().slice(0, 10),
+  activity_date: currentMonth, // YYYY-MM
   responsible_person: '',
   beneficiaries_count: 0,
   status: 'planned',
@@ -56,7 +58,7 @@ export default function Activities() {
 
   function openEdit(a) {
     setEditing(a);
-    setForm({ ...empty, ...a });
+    setForm({ ...empty, ...a, activity_date: monthOf(a) });
     setShowNewCategory(false);
     setNewCategory('');
     setModal(true);
@@ -77,7 +79,11 @@ export default function Activities() {
       alert('اختر فئة النشاط أو أضف فئة جديدة');
       return;
     }
-    const payload = { ...form, beneficiaries_count: Number(form.beneficiaries_count) };
+    const payload = {
+      ...form,
+      activity_date: `${form.activity_date}-01`, // نخزن أول يوم في الشهر
+      beneficiaries_count: Number(form.beneficiaries_count),
+    };
     if (editing) await updateActivity(editing.id, payload);
     else await addActivity(payload);
     setModal(false);
@@ -130,7 +136,7 @@ export default function Activities() {
 
             <div className="space-y-1 text-xs text-slate-500 mb-3">
               <div className="flex items-center gap-1">
-                <Calendar size={12} /> {monthOf(a)} • {a.activity_date}
+                <Calendar size={12} /> {monthOf(a)}
               </div>
               <div className="flex items-center gap-1">
                 <Users size={12} /> {a.beneficiaries_count} مستفيد • {a.responsible_person || '-'}
@@ -207,7 +213,7 @@ export default function Activities() {
               )}
             </div>
 
-            <Input label="تاريخ التنفيذ" type="date" required value={form.activity_date} onChange={(e) => setForm({ ...form, activity_date: e.target.value })} />
+            <Input label="شهر التنفيذ" type="month" required value={form.activity_date} onChange={(e) => setForm({ ...form, activity_date: e.target.value })} />
             <Input label="المسؤول" value={form.responsible_person} onChange={(e) => setForm({ ...form, responsible_person: e.target.value })} />
             <Input label="عدد المستفيدين" type="number" value={form.beneficiaries_count} onChange={(e) => setForm({ ...form, beneficiaries_count: e.target.value })} />
 

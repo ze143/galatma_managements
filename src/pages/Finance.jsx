@@ -7,8 +7,10 @@ import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Select from '../components/ui/Select';
 
+const currentMonth = new Date().toISOString().slice(0, 7);
+
 const empty = {
-  transaction_date: new Date().toISOString().slice(0, 10),
+  transaction_date: currentMonth, // YYYY-MM
   type: 'income', category_id: '', bank_account_id: '', to_bank_account_id: '',
   amount: '', receipt_number: '', notes: '', activity_id: '',
 };
@@ -44,12 +46,17 @@ export default function Finance() {
   }, [filtered]);
 
   function openAdd() { setEditing(null); setForm(empty); setModal(true); }
-  function openEdit(t) { setEditing(t); setForm({ ...empty, ...t }); setModal(true); }
+  function openEdit(t) {
+    setEditing(t);
+    setForm({ ...empty, ...t, transaction_date: monthOf(t) });
+    setModal(true);
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
     const payload = {
       ...form,
+      transaction_date: `${form.transaction_date}-01`, // نخزن أول يوم في الشهر
       amount: Number(form.amount),
       category_id: form.category_id || null,
       to_bank_account_id: form.type === 'transfer' ? form.to_bank_account_id : null,
@@ -116,7 +123,6 @@ export default function Finance() {
             <thead className="bg-slate-50 border-b border-slate-100">
               <tr>
                 <th className="p-3 text-right font-bold text-slate-600">الشهر</th>
-                <th className="p-3 text-right font-bold text-slate-600">التاريخ</th>
                 <th className="p-3 text-right font-bold text-slate-600">النوع</th>
                 <th className="p-3 text-right font-bold text-slate-600">البند</th>
                 <th className="p-3 text-right font-bold text-slate-600">البنك</th>
@@ -130,7 +136,6 @@ export default function Finance() {
               {filtered.map((t) => (
                 <tr key={t.id} className="border-b border-slate-50 hover:bg-slate-50/50">
                   <td className="p-3 font-semibold">{monthOf(t)}</td>
-                  <td className="p-3 text-slate-500">{t.transaction_date}</td>
                   <td className="p-3"><span className={`px-2 py-1 rounded-lg text-xs font-bold ${typeColor(t.type)}`}>{typeLabel(t.type)}</span></td>
                   <td className="p-3">{catName(t.category_id)}</td>
                   <td className="p-3">{bankName(t.bank_account_id)}{t.type === 'transfer' && <span className="text-xs text-slate-400"> ← {bankName(t.to_bank_account_id)}</span>}</td>
@@ -147,7 +152,7 @@ export default function Finance() {
                   )}
                 </tr>
               ))}
-              {filtered.length === 0 && <tr><td colSpan={9} className="p-8 text-center text-slate-400">لا توجد حركات مطابقة</td></tr>}
+              {filtered.length === 0 && <tr><td colSpan={8} className="p-8 text-center text-slate-400">لا توجد حركات مطابقة</td></tr>}
             </tbody>
           </table>
         </div>
@@ -156,7 +161,7 @@ export default function Finance() {
       <Modal open={modal} onClose={() => setModal(false)} title={editing ? 'تعديل الحركة' : 'إضافة حركة جديدة'} size="lg">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="التاريخ" type="date" required value={form.transaction_date} onChange={(e) => setForm({ ...form, transaction_date: e.target.value })} />
+            <Input label="الشهر" type="month" required value={form.transaction_date} onChange={(e) => setForm({ ...form, transaction_date: e.target.value })} />
             <Select label="النوع" required value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
               <option value="income">إيراد</option><option value="expense">مصروف</option><option value="transfer">تحويل بين البنوك</option>
             </Select>
