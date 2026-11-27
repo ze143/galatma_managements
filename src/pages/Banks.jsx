@@ -36,12 +36,29 @@ export default function Banks() {
   function openEdit(b) { setEditing(b); setForm({ ...empty, ...b }); setModal(true); }
 
   async function handleSubmit(e) {
-    e.preventDefault();
-    const payload = { ...form, opening_balance: Number(form.opening_balance) };
-    if (editing) await updateBank(editing.id, payload);
-    else await addBank(payload);
-    setModal(false);
+  e.preventDefault();
+
+  // أرسل فقط الأعمدة الموجودة فعلاً في جدول bank_accounts
+  const payload = {
+    bank_name: form.bank_name,
+    account_number: form.account_number,
+    account_holder: form.account_holder || null,
+    opening_balance: Number(form.opening_balance) || 0,
+    notes: form.notes || null,
+    is_active: form.is_active ?? true,
+  };
+
+  const result = editing
+    ? await updateBank(editing.id, payload)
+    : await addBank(payload);
+
+  if (result?.error) {
+    console.error('فشل حفظ البنك:', result.error);
+    alert(`فشل الحفظ: ${result.error.message} (${result.error.code})`);
+    return;
   }
+  setModal(false);
+}
 
   return (
     <div className="space-y-6">
